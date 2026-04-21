@@ -32,47 +32,6 @@ const ERRORS = {
   LICENSE_TOO_NEW: "Driver license held for less than a year - cannot rent"
 };
 
-function price(
-  pickup,
-  dropoff,
-  pickupDateInput,
-  dropoffDateInput,
-  type,
-  age,
-  licenseYears = DEFAULT_LICENSE_YEARS
-) {
-  const driverAge = Number(age);
-  const heldLicenseYears = Number(licenseYears);
-  const rentalDates = getRentalDates(pickupDateInput, dropoffDateInput);
-  const rentalDays = rentalDates.length;
-  const carClass = getCarClass(type);
-  const season = getSeason(rentalDates);
-  const eligibilityError = getEligibilityError(
-    driverAge,
-    heldLicenseYears,
-    carClass
-  );
-
-  if (eligibilityError) {
-    return eligibilityError;
-  }
-
-  let totalPrice = calculateBaseRentalPrice(driverAge, rentalDates);
-
-  totalPrice = applyNewDriverMultiplier(totalPrice, heldLicenseYears);
-  totalPrice = applyRacerSurcharge(totalPrice, carClass, driverAge, season);
-  totalPrice = applySeasonalIncrease(totalPrice, season);
-  totalPrice = applyLongRentalDiscount(totalPrice, rentalDays, season);
-  totalPrice = applyHighSeasonExperienceFee(
-    totalPrice,
-    heldLicenseYears,
-    rentalDays,
-    season
-  );
-
-  return formatPrice(totalPrice);
-}
-
 function getEligibilityError(driverAge, heldLicenseYears, carClass) {
   if (driverAge < MIN_DRIVER_AGE) {
     return ERRORS.TOO_YOUNG;
@@ -89,11 +48,18 @@ function getEligibilityError(driverAge, heldLicenseYears, carClass) {
   return null;
 }
 
-function calculateBaseRentalPrice(driverAge, rentalDates) {
-  return rentalDates.reduce(
-    (total, date) => total + getDailyPrice(driverAge, date),
-    0
-  );
+function isWeekend(date) {
+  const day = date.getUTCDay();
+
+  if (day === 0) {
+    return true;
+  }
+
+  if (day === 6) {
+    return true;
+  }
+
+  return false;
 }
 
 function getDailyPrice(driverAge, date) {
@@ -102,6 +68,13 @@ function getDailyPrice(driverAge, date) {
   }
 
   return driverAge;
+}
+
+function calculateBaseRentalPrice(driverAge, rentalDates) {
+  return rentalDates.reduce(
+    (total, date) => total + getDailyPrice(driverAge, date),
+    0
+  );
 }
 
 function applyNewDriverMultiplier(totalPrice, heldLicenseYears) {
@@ -165,20 +138,8 @@ function getCarClass(type) {
   return "Unknown";
 }
 
-function getRentalDates(pickupDateInput, dropoffDateInput) {
-  const pickupDate = parseDateInput(pickupDateInput);
-  const dropoffDate = parseDateInput(dropoffDateInput);
-  const startTime = Math.min(pickupDate.getTime(), dropoffDate.getTime());
-  const endTime = Math.max(pickupDate.getTime(), dropoffDate.getTime());
-  const dates = [];
-  let currentTime = startTime;
-
-  while (currentTime <= endTime) {
-    dates.push(new Date(currentTime));
-    currentTime += MILLISECONDS_IN_DAY;
-  }
-
-  return dates;
+function createUtcDate(year, month, day) {
+  return new Date(Date.UTC(year, month, day));
 }
 
 function parseDateInput(value) {
@@ -211,16 +172,20 @@ function parseDateInput(value) {
   throw new Error("Unsupported date input");
 }
 
-function createUtcDate(year, month, day) {
-  return new Date(Date.UTC(year, month, day));
-}
+function getRentalDates(pickupDateInput, dropoffDateInput) {
+  const pickupDate = parseDateInput(pickupDateInput);
+  const dropoffDate = parseDateInput(dropoffDateInput);
+  const startTime = Math.min(pickupDate.getTime(), dropoffDate.getTime());
+  const endTime = Math.max(pickupDate.getTime(), dropoffDate.getTime());
+  const dates = [];
+  let currentTime = startTime;
 
-function getSeason(rentalDates) {
-  if (rentalDates.some(isHighSeasonDate)) {
-    return SEASONS.HIGH;
+  while (currentTime <= endTime) {
+    dates.push(new Date(currentTime));
+    currentTime += MILLISECONDS_IN_DAY;
   }
 
-  return SEASONS.LOW;
+  return dates;
 }
 
 function isHighSeasonDate(date) {
@@ -237,22 +202,57 @@ function isHighSeasonDate(date) {
   return true;
 }
 
-function isWeekend(date) {
-  const day = date.getUTCDay();
-
-  if (day === 0) {
-    return true;
+function getSeason(rentalDates) {
+  if (rentalDates.some(isHighSeasonDate)) {
+    return SEASONS.HIGH;
   }
 
-  if (day === 6) {
-    return true;
-  }
-
-  return false;
+  return SEASONS.LOW;
 }
 
 function formatPrice(amount) {
   return `$${(Math.round(amount * 100) / 100).toString()}`;
+}
+
+function price(
+  pickup,
+  dropoff,
+  pickupDateInput,
+  dropoffDateInput,
+  type,
+  age,
+  licenseYears = DEFAULT_LICENSE_YEARS
+) {
+  const driverAge = Number(age);
+  const heldLicenseYears = Number(licenseYears);
+  const rentalDates = getRentalDates(pickupDateInput, dropoffDateInput);
+  const rentalDays = rentalDates.length;
+  const carClass = getCarClass(type);
+  const season = getSeason(rentalDates);
+  const eligibilityError = getEligibilityError(
+    driverAge,
+    heldLicenseYears,
+    carClass
+  );
+
+  if (eligibilityError) {
+    return eligibilityError;
+  }
+
+  let totalPrice = calculateBaseRentalPrice(driverAge, rentalDates);
+
+  totalPrice = applyNewDriverMultiplier(totalPrice, heldLicenseYears);
+  totalPrice = applyRacerSurcharge(totalPrice, carClass, driverAge, season);
+  totalPrice = applySeasonalIncrease(totalPrice, season);
+  totalPrice = applyLongRentalDiscount(totalPrice, rentalDays, season);
+  totalPrice = applyHighSeasonExperienceFee(
+    totalPrice,
+    heldLicenseYears,
+    rentalDays,
+    season
+  );
+
+  return formatPrice(totalPrice);
 }
 
 module.exports = {

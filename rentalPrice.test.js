@@ -231,20 +231,23 @@ describe("helper functions", () => {
     expect(isWeekend(parseDateInput("2024-01-15"))).toBe(false);
   });
 
-  test("parseDateInput accepts date-only strings, datetime strings, timestamps and Date inputs", () => {
-    expect(parseDateInput("2024-02-12").toISOString()).toBe(
-      "2024-02-12T00:00:00.000Z"
-    );
-    expect(parseDateInput("2024-02-12T10:00:00.000Z").toISOString()).toBe(
-      "2024-02-12T00:00:00.000Z"
-    );
-    expect(parseDateInput(Date.parse("2024-02-12")).toISOString()).toBe(
-      "2024-02-12T00:00:00.000Z"
-    );
-    expect(
-      parseDateInput(new Date("2024-02-12T10:00:00.000Z")).toISOString()
-    ).toBe("2024-02-12T00:00:00.000Z");
-  });
+  test(
+    "parseDateInput accepts date-only strings, datetime strings, timestamps and Date inputs",
+    () => {
+      expect(parseDateInput("2024-02-12").toISOString()).toBe(
+        "2024-02-12T00:00:00.000Z"
+      );
+      expect(parseDateInput("2024-02-12T10:00:00.000Z").toISOString()).toBe(
+        "2024-02-12T00:00:00.000Z"
+      );
+      expect(parseDateInput(Date.parse("2024-02-12")).toISOString()).toBe(
+        "2024-02-12T00:00:00.000Z"
+      );
+      expect(
+        parseDateInput(new Date("2024-02-12T10:00:00.000Z")).toISOString()
+      ).toBe("2024-02-12T00:00:00.000Z");
+    }
+  );
 
   test("parseDateInput throws for unsupported values", () => {
     expect(() => parseDateInput({})).toThrow("Unsupported date input");
