@@ -1,37 +1,47 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const rental = require('./rentalPrice');
 const fs = require('fs');
+const path = require('path');
+const { price } = require('./rentalPrice');
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+const formHtml = fs.readFileSync(path.join(__dirname, 'form.html'), 'utf8');
+const resultHtml = fs.readFileSync(path.join(__dirname, 'result.html'), 'utf8');
 
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/pictures', express.static('images'));
 
-const formHtml = fs.readFileSync('form.html', 'utf8');
-const resultHtml = fs.readFileSync('result.html', 'utf8');
+app.get('/', (_req, res) => {
+  res.send(formHtml);
+});
 
 app.post('/', (req, res) => {
-    const post = req.body;
-    const result = rental.price(
-        String(post.pickup),
-        String(post.dropoff),
-        Date.parse(post.pickupdate),
-        Date.parse(post.dropoffdate),
-        String(post.type),
-        Number(post.age)
-    );
-    res.send(formHtml + resultHtml.replaceAll('$0', result));
+  const {
+    pickup,
+    dropoff,
+    pickupdate,
+    dropoffdate,
+    type,
+    age,
+    licenseYears,
+  } = req.body;
+
+  const result = price(
+    String(pickup),
+    String(dropoff),
+    String(pickupdate),
+    String(dropoffdate),
+    String(type),
+    Number(age),
+    Number(licenseYears),
+  );
+
+  res.send(formHtml + resultHtml.replaceAll('$0', result));
 });
 
-app.get('/', (req, res) => {
-    res.send(formHtml);
-});
-
-// Start the server
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+  console.log(`Server listening at http://localhost:${port}`);
 });
