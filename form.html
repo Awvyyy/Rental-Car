@@ -1,54 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
     <title>Car Rental Booking Form</title>
   </head>
   <body>
     <h1>Car Rental Booking Form</h1>
-
     <form method="post" action="/">
-      <label>
-        Pickup Location:
-        <input type="text" name="pickup" required />
-      </label>
-      <br />
-      <label>
-        Dropoff Location:
-        <input type="text" name="dropoff" required />
-      </label>
-      <br />
-      <label>
-        Pickup Date:
-        <input type="date" name="pickupdate" required />
-      </label>
-      <br />
-      <label>
-        Dropoff Date:
-        <input type="date" name="dropoffdate" required />
-      </label>
-      <br />
-      <label>
-        Car Type:
-        <select name="type" required>
-          <option value="Compact">Compact</option>
-          <option value="Electric">Electric</option>
-          <option value="Cabrio">Cabrio</option>
-          <option value="Racer">Racer</option>
-        </select>
-      </label>
-      <br />
-      <label>
-        Driver's age:
-        <input type="number" name="age" min="0" required />
-      </label>
-      <br />
-      <label>
-        Driver's license held for (years):
-        <input type="number" name="licenseYears" min="0" step="0.1" required />
-      </label>
-      <br />
+      <label for="pickup">Pickup Location:</label>
+      <input id="pickup" name="pickup" type="text" required>
+
+      <label for="dropoff">Dropoff Location:</label>
+      <input id="dropoff" name="dropoff" type="text" required>
+
+      <label for="pickupdate">Pickup Date:</label>
+      <input id="pickupdate" name="pickupdate" type="date" required>
+
+      <label for="dropoffdate">Dropoff Date:</label>
+      <input id="dropoffdate" name="dropoffdate" type="date" required>
+
+      <label for="type">Car Type:</label>
+      <select id="type" name="type" required>
+        <option value="Compact">Compact</option>
+        <option value="Electric">Electric</option>
+        <option value="Cabrio">Cabrio</option>
+        <option value="Racer">Racer</option>
+      </select>
+
+      <label for="age">Driver's age:</label>
+      <input id="age" name="age" type="number" min="18" required>
+
+      <label for="licenseYears">Driver's license held for (years):</label>
+      <input
+        id="licenseYears"
+        name="licenseYears"
+        type="number"
+        min="0"
+        step="0.1"
+        required
+      >
+
       <button type="submit">Search</button>
     </form>
   </body>
